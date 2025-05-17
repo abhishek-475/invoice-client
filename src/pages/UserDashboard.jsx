@@ -3,13 +3,11 @@ import axios from '../utils/axios';
 import { toast } from 'react-toastify';
 
 const UserDashboard = () => {
-  // existing states
   const [users, setUsers] = useState([]);
   const [roleFilter, setRoleFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // modal states for create user
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -19,7 +17,6 @@ const UserDashboard = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  // new states for update role modal
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newRole, setNewRole] = useState('');
@@ -53,7 +50,6 @@ const UserDashboard = () => {
     }
   };
 
-  // Create user handler (unchanged)
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -83,14 +79,12 @@ const UserDashboard = () => {
     }
   };
 
-  // Open modal for updating role, set selected user and current role
   const openUpdateRoleModal = (user) => {
     setSelectedUser(user);
     setNewRole(user.role);
     setShowUpdateModal(true);
   };
 
-  // Submit role update
   const handleUpdateRoleSubmit = async (e) => {
     e.preventDefault();
     if (!newRole) {
@@ -98,7 +92,7 @@ const UserDashboard = () => {
       return;
     }
     try {
-      await axios.put(`/users/${selectedUser._id}`, { newRole });
+      await axios.put(`/users/${selectedUser._id}`, { role: newRole });
       toast.success('User role updated successfully');
       setShowUpdateModal(false);
       setSelectedUser(null);
@@ -156,117 +150,184 @@ const UserDashboard = () => {
       {loading ? (
         <div className="text-center py-4">Loading users...</div>
       ) : (
-
-      <div className="table-responsive">
-        <table className="table table-bordered table-hover align-middle">
-          <thead className="table-dark">
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th style={{ minWidth: '140px' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length > 0 ? (
-              users.map(u => (
-                <tr key={u._id} style={{ cursor: 'default' }}>
-                  <td>{u.uniqueId}</td>
-                  <td>{u.username}</td>
-                  <td>{u.email}</td>
-                  <td>{u.role}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-warning me-2"
-                      onClick={() => openUpdateRoleModal(u)}
-                    >
-                      Update Role
-                    </button>
-                    <button
-                      className="btn btn-sm btn-secondary"
-                      onClick={() => handleDeleteUser(u._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
+        <div className="table-responsive">
+          <table className="table table-bordered table-hover align-middle">
+            <thead className="table-dark">
               <tr>
-                <td colSpan="5" className="text-center py-4">
-                  No users found.
-                </td>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th style={{ minWidth: '140px' }}>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {users.length > 0 ? (
+                users.map(u => (
+                  <tr key={u._id}>
+                    <td>{u.uniqueId}</td>
+                    <td>{u.username}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-warning me-2"
+                        onClick={() => openUpdateRoleModal(u)}
+                      >
+                        Update Role
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => handleDeleteUser(u._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4">No users found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
-      {/* Create User Modal - unchanged */}
 
-      {/* Update Role Modal */}
-      {showUpdateModal && (
+      {/* Create User Modal */}
+      {showModal && (
         <>
-          <div
-            className="modal-backdrop fade show"
-            onClick={() => !submitting && setShowUpdateModal(false)}
-            style={{ cursor: submitting ? 'not-allowed' : 'pointer' }}
-          ></div>
-
-          <div
-            className="modal d-block fade show"
-            tabIndex="-1"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="updateRoleModalLabel"
-            onKeyDown={e => e.key === 'Escape' && !submitting && setShowUpdateModal(false)}
-            style={{ overflowY: 'auto' }}
-          >
-            <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-backdrop fade show"></div>
+          <div className="modal d-block fade show">
+            <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
-                <form onSubmit={handleUpdateRoleSubmit}>
+                <form onSubmit={handleCreateUser}>
                   <div className="modal-header">
-                    <h5 className="modal-title" id="updateRoleModalLabel">
-                      Update Role for {selectedUser?.username}
-                    </h5>
+                    <h5 className="modal-title">Create New User</h5>
                     <button
                       type="button"
                       className="btn-close"
-                      aria-label="Close"
-                      onClick={() => !submitting && setShowUpdateModal(false)}
+                      onClick={() => setShowModal(false)}
                       disabled={submitting}
                     ></button>
                   </div>
                   <div className="modal-body">
-                    <select
-                      className="form-select"
-                      value={newRole}
-                      onChange={e => setNewRole(e.target.value)}
-                      required
-                      disabled={submitting}
-                    >
-                      <option value="">Select Role</option>
-                      <option value="ADMIN">Admin</option>
-                      <option value="UNIT_MANAGER">Unit Manager</option>
-                      <option value="USER">User</option>
-                    </select>
+                    <div className="mb-3">
+                      <label className="form-label">Username</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.username}
+                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                        required
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        required
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                        required
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Role</label>
+                      <select
+                        className="form-select"
+                        value={formData.role}
+                        onChange={e => setFormData({ ...formData, role: e.target.value })}
+                        required
+                        disabled={submitting}
+                      >
+                        <option value="">Select Role</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="UNIT_MANAGER">Unit Manager</option>
+                        <option value="USER">User</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="modal-footer">
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => setShowUpdateModal(false)}
+                      onClick={() => setShowModal(false)}
                       disabled={submitting}
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="btn btn-success"
+                      className="btn btn-primary"
                       disabled={submitting}
                     >
-                      {submitting ? 'Updating...' : 'Update Role'}
+                      {submitting ? 'Creating...' : 'Create User'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Update Role Modal */}
+      {showUpdateModal && selectedUser && (
+        <>
+          <div className="modal-backdrop fade show"></div>
+          <div className="modal d-block fade show">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <form onSubmit={handleUpdateRoleSubmit}>
+                  <div className="modal-header">
+                    <h5 className="modal-title">Update Role for {selectedUser.username}</h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowUpdateModal(false)}
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label className="form-label">Select New Role</label>
+                      <select
+                        className="form-select"
+                        value={newRole}
+                        onChange={e => setNewRole(e.target.value)}
+                        required
+                      >
+                        <option value="">Select Role</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="UNIT_MANAGER">Unit Manager</option>
+                        <option value="USER">User</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setShowUpdateModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Update Role
                     </button>
                   </div>
                 </form>
